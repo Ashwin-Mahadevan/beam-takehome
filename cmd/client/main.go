@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	client "slai.io/takehome/pkg/client"
@@ -15,14 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	value, err :=c.Echo("Hello, World!")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Received: '%s'", value)
-
 	watcher, err := fsnotify.NewWatcher()
 
 	if err != nil {
@@ -34,42 +28,65 @@ func main() {
 	/* TODO: get from CLI*/
 	watcher.Add("./input")
 
-	for {
-	    select {
-		case event, ok := <-watcher.Events:
-			if !ok {
-				log.Println("Watcher closed")
-				return
-			}
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					log.Println("Watcher closed")
+					return
+				}
 
-			if event.Has(fsnotify.Write) {
-				log.Printf("File %s was written to", event.Name)
-			}
+				if event.Has(fsnotify.Write) {
+					log.Printf("File %s was written to", event.Name)
 
-		case err, ok := <-watcher.Errors:
-			if !ok {
-				return
-			}
+					content, err := os.ReadFile(event.Name)
 
-			log.Printf("Error: %s", err)
+					if err != nil {
+						log.Printf("Error reading file %s: %s", event.Name, err)
+						continue
+					}
+
+					success, message, err := c.Sync(event.Name, string(content))
+
+					if err != nil {
+						log.Printf("Error syncing file %s: %s", event.Name, err)
+						continue
+					}
+
+					if !success {
+						log.Printf("Error syncing file %s: %s", event.Name, message)
+						continue
+					}
+
+					log.Printf("Synced file %s: %s", event.Name, message)
+				}
+
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+
+				log.Printf("Error: %s", err)
+			}
 		}
-    }
+	}()
 
 	/** Starter code */
 
-	// someMessage := "hello there"
-	// for {
+	someMessage := "hello there"
+	for {
 
-	// 	log.Printf("Sending: '%s'", someMessage)
+		log.Printf("Sending: '%s'", someMessage)
 
-	// 	value, err := c.Echo(someMessage)
-	// 	if err != nil {
-	// 		log.Fatal("Unable to send request.")
-	// 	}
+		value, err := c.Echo(someMessage)
+		if err != nil {
+			log.Fatal("Unable to send request.")
+		}
 
-	// 	log.Printf("Received: '%s'", value)
+		log.Printf("Received: '%s'", value)
 
-	// 	time.Sleep(time.Second)
-	// }
+		time.Sleep(time.Minute)
+	}
 
 }
