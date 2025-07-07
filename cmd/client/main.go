@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -19,6 +20,35 @@ func main() {
 		log.Fatal(err)
 	}
 
+	entries, err := os.ReadDir("./input")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, entry := range entries {
+		content, err := os.ReadFile(fmt.Sprintf("./input/%s", entry.Name()))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		base64Content := base64.StdEncoding.EncodeToString(content)
+
+		success, message, err := c.Sync(entry.Name(), base64Content)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if !success {
+			log.Fatal(message)
+		}
+
+		log.Printf("Synced file %s: %s", entry.Name(), message)
+	}
+
+
 	watcher, err := fsnotify.NewWatcher()
 
 	if err != nil {
@@ -27,7 +57,6 @@ func main() {
 
 	defer watcher.Close()
 
-	/* TODO: get from CLI*/
 	watcher.Add("./input")
 
 	go func() {
