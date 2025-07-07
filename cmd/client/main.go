@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -47,7 +48,9 @@ func main() {
 						continue
 					}
 
-					success, message, err := c.Sync(event.Name, string(content))
+					relativePath := strings.TrimPrefix(event.Name, "input/")
+
+					success, message, err := c.Sync(relativePath, string(content))
 
 					if err != nil {
 						log.Printf("Error syncing file %s: %s", event.Name, err)

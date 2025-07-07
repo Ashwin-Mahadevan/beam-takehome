@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -66,6 +67,11 @@ func handleMessage(w http.ResponseWriter, r *http.Request) {
 
 func StartServer() {
 	flag.Parse()
+	
+	if err := os.MkdirAll("./sync", 0755); err != nil {
+		log.Printf("Error creating sync directory: %s", err)
+	}
+	
 	http.HandleFunc("/", handleMessage)
 	log.Println("Starting server @", addr)
 	log.Fatal((http.ListenAndServe(addr, nil)))

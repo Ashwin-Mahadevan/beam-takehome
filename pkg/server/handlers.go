@@ -2,7 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/gorilla/websocket"
 	"slai.io/takehome/pkg/common"
@@ -48,6 +50,11 @@ func HandleSync(msg []byte, client *Client) error {
 	if err != nil {
 		log.Fatal("Invalid sync request.")
 	}
+
+	log.Printf("Syncing file %s", request.Path)
+	log.Printf("Content: %s", request.Content)
+
+	os.WriteFile(fmt.Sprintf("./sync/%s", request.Path), []byte(request.Content), 0644)
 
 	response := &common.SyncResponse{
 		BaseResponse: common.BaseResponse{
