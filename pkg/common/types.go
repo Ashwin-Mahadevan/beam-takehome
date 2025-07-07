@@ -4,6 +4,7 @@ type RequestType string
 
 const (
 	Echo RequestType = "ECHO"
+	Sync RequestType = "SYNC"
 )
 
 type BaseRequest struct {
@@ -24,4 +25,16 @@ type EchoRequest struct {
 type EchoResponse struct {
 	BaseResponse
 	Value string
+}
+
+type SyncRequest struct {
+	BaseRequest
+	Path string
+	Content string
+}
+
+type SyncResponse struct {
+	BaseResponse
+	Success bool
+	Message string
 }
