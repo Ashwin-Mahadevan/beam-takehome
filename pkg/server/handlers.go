@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -52,9 +53,14 @@ func HandleSync(msg []byte, client *Client) error {
 	}
 
 	log.Printf("Syncing file %s", request.Path)
-	log.Printf("Content: %s", request.Content)
+	
+	content, err := base64.StdEncoding.DecodeString(request.Content)
+	if err != nil {
+		log.Printf("Error decoding base64 content: %s", err)
+		return err
+	}
 
-	os.WriteFile(fmt.Sprintf("./sync/%s", request.Path), []byte(request.Content), 0644)
+	os.WriteFile(fmt.Sprintf("./sync/%s", request.Path), content, 0644)
 
 	response := &common.SyncResponse{
 		BaseResponse: common.BaseResponse{

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"log"
 	"os"
 	"strings"
@@ -49,8 +50,9 @@ func main() {
 					}
 
 					relativePath := strings.TrimPrefix(event.Name, "input/")
+					base64Content := base64.StdEncoding.EncodeToString(content)
 
-					success, message, err := c.Sync(relativePath, string(content))
+					success, message, err := c.Sync(relativePath, base64Content)
 
 					if err != nil {
 						log.Printf("Error syncing file %s: %s", event.Name, err)
