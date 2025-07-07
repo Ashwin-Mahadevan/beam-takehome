@@ -39,7 +39,7 @@ func main() {
 					return
 				}
 
-				if event.Has(fsnotify.Write) {
+				if event.Has(fsnotify.Write) || event.Has(fsnotify.Create) {
 					log.Printf("File %s was written to", event.Name)
 
 					content, err := os.ReadFile(event.Name)
